@@ -162,8 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
             ]
         },
         {
+            id: 3,
             title: 'Gaming Content',
             category: 'gaming',
+            image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+            description: 'Exciting gaming content and walkthroughs.',
             videos: [
                 {
                     title: 'Epic Gameplay',
