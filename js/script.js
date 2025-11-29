@@ -537,24 +537,62 @@ function createPortfolioItems() {
         });
     }
 
-    // Form submission
+    // Contact Form Submission
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Get form data
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const originalText = btnText.textContent;
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Sending...';
+            
+            // Create FormData object
             const formData = new FormData(this);
-            const formValues = Object.fromEntries(formData.entries());
             
-            // In a real app, you would send this data to a server
-            console.log('Form submitted:', formValues);
+            // Convert FormData to URL-encoded string
+            const formDataString = new URLSearchParams();
+            for (const pair of formData) {
+                formDataString.append(pair[0], pair[1]);
+            }
             
-            // Show success message
-            alert('Thank you for your message! We will get back to you soon.');
-            
-            // Reset form
-            this.reset();
+            // Get the form data as an object
+            const formDataObj = {};
+            formDataString.forEach((value, key) => {
+                formDataObj[key] = value;
+            });
+
+            // Add a timestamp to prevent caching
+            formDataObj['timestamp'] = new Date().getTime();
+
+            // Send the form data
+            fetch(this.action, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'https://script.google.com/macros/s/AKfycbywbfGrY9JNkEWhl-0coVU4Zfv79en9YZR58yEHkvEq7sBN0L9BzdvGBc8_7LALRg-4/exec',
+                },
+                body: new URLSearchParams(formDataObj).toString()
+            })
+            .then(response => {
+                // For no-cors mode, we don't get a response we can read
+                // So we'll just show a success message
+                alert('Thank you! Your message has been sent successfully.');
+                this.reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Thank you! Your message has been received. We will get back to you soon.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnText.textContent = originalText;
+            });
         });
     }
 
@@ -583,4 +621,76 @@ function createPortfolioItems() {
     // Run animation on load and scroll
     window.addEventListener('load', animateOnScroll);
     window.addEventListener('scroll', animateOnScroll);
+
+    // Newsletter Form Submission
+    const newsletterForm = document.getElementById('newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const emailInput = this.querySelector('input[type="email"]');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const errorMessage = this.querySelector('.error-message');
+            const successMessage = this.querySelector('.success-message');
+            
+            // Hide any previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Validate email
+            const email = emailInput.value.trim();
+            if (!email || !isValidEmail(email)) {
+                errorMessage.textContent = 'Please enter a valid email address.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Subscribing...';
+            
+            // Create a hidden iframe for form submission
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            // Create a form element
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://script.google.com/macros/s/AKfycbywbfGrY9JNkEWhl-0coVU4Zfv79en9YZR58yEHkvEq7sBN0L9BzdvGBc8_7LALRg-4/exec';
+            form.target = iframe.name;
+            
+            // Add email as a hidden input
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'email';
+            input.value = email;
+            form.appendChild(input);
+            
+            // Add the form to the page and submit it
+            document.body.appendChild(form);
+            form.submit();
+            
+            // Clean up and show success message
+            setTimeout(() => {
+                document.body.removeChild(form);
+                document.body.removeChild(iframe);
+                
+                successMessage.textContent = 'Thank you for subscribing!';
+                successMessage.style.display = 'block';
+                this.reset();
+                
+                // Re-enable button and restore text
+                submitBtn.disabled = false;
+                btnText.textContent = 'Subscribe';
+            }, 2000);
+        });
+    }
+
+    // Email validation helper function
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
 });
